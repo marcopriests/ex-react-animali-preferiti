@@ -11,7 +11,7 @@
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     <!-- React Component -->
-    <script type="text/babel">
+    <!-- <script type="text/babel">
         const { useState } = React;
 
 
@@ -50,7 +50,78 @@
             );
         };
 
+    </script> -->
+
+    <script type="text/babel">
+        const { useState } = React;
+        const { createPortal } = ReactDOM;
+
+        const ReactApp = () => {
+            const [animals, setAnimals] = useState([]);
+            const [show, setShow] = useState(false);
+            const [contentValue, setContentValue] = useState('');
+
+            function Modal({
+                title,
+                content,
+                show = false,
+                onClose = () => { },
+                onConfirm = () => { }
+            }) {
+                return show && ReactDOM.createPortal(
+                    <div className="modal-container">
+                        <div className="modal">
+                            <h2>{title}</h2>
+                            <div>{content}</div>
+                            <div>
+                                <button onClick={onClose}>Annulla</button>
+                                <button onClick={onConfirm}>Conferma</button>
+                            </div>
+                        </div>
+                    </div>,
+                    document.body
+                )
+            }
+
+            function addAnimal(animal) {
+                // effettuo il controllo se l'animale è già stato inserito
+                if (!animals.includes(animal)) {
+                    setAnimals([...animals, animal]);
+                    setShow(false);
+                    setContentValue('');
+                } else {
+                    setShow(false);
+                    setContentValue('');
+                    console.log('Animale già inserito in precedenza');
+                };
+            };
+
+            return (
+                < div >
+                    <details>
+                        <summary><strong>Animali</strong></summary>
+                        <ul>
+                            {animals.map((animal, index) => <li key={index}>{animal}</li>)}
+                        </ul>
+                    </details>
+
+                    <button onClick={() => setShow(true)}>Aggiungi Animale</button>
+
+                    <section>
+                        <Modal
+                            title='Inserisci un nuovo animale'
+                            content={<input type='text' value={contentValue} onChange={e => setContentValue(e.target.value)} />}
+                            show={show}
+                            onClose={() => setShow(false)}
+                            onConfirm={() => addAnimal(contentValue)}
+                        />
+                    </section>
+                </div >
+            )
+        }
+
     </script>
+
     <script type="text/babel">
         const { createRoot } = ReactDOM;
         const listaAnimali = document.querySelector('.lista-animali');
