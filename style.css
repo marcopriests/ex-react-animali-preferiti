@@ -58,3 +58,14 @@ img {
     padding: 20px;
     border-radius: 5px;
 }
+
+.card {
+    padding: 20px;
+    border-radius: 5px;
+    margin: 10px 0;
+    border: 1px solid;
+}
+
+.card-image {
+    height: 100px
+}

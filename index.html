@@ -60,6 +60,7 @@
             const [animals, setAnimals] = useState([]);
             const [show, setShow] = useState(false);
             const [contentValue, setContentValue] = useState('');
+            const [isLoading, setIsLoading] = useState(false);
 
             function Modal({
                 title,
@@ -96,36 +97,28 @@
             //     };
             // };
 
-            async function fetchJson(url) {
-                const res = await fetch(url);
-                const obj = await res.json();
-                return obj;
-            };
-
             async function addNewAnimal(animalName) {
+                if (!animalName.trim()) return;
+                setIsLoading(true);
                 try {
-                    const fetchAnimal = await fetchJson(`http://localhost:3333/animals?search=${animalName}`);
+                    const response = await fetch(`http://localhost:3333/animals?search=${animalName}`);
+                    const [animalData] = await response.json();
 
-                    if (fetchAnimal.length === 0) {
-                        console.log('Nessun animale trovato');
-                    } else {
-
-                        const animal = fetchAnimal[0];
-
-                        const animalObj = {
-                            name: animal.name,
-                            description: animal.description || 'Descrizione non disponibile',
-                            image: 'https://picsum.photos/200/300'
-                        };
-
-                        console.log(animalObj);
-                        setAnimals([...animals, animalObj]);
-                        setContentValue('');
+                    if (!animalData) {
+                        throw new Error('Nessun animale trovato');
                     }
+                    const animal = {
+                        name: animalData.name || null,
+                        description: animalData.description || null,
+                        image: animalData.image || null
+                    };
+                    setAnimals([...animals, animal]);
+                } catch (err) {
+                    console.error(err);
+                } finally {
+                    setContentValue('');
                     setShow(false);
-
-                } catch (error) {
-                    console.error(error, error.message)
+                    setIsLoading(false);
                 }
 
             };
@@ -139,7 +132,12 @@
                                 return (
                                     <div className='card' key={index}>
                                         <h3 className='card-title'>{animal.name}</h3>
-                                        <img src={animal.image} alt="" className="card-image" />
+                                        <p>{animal.description}</p>
+                                        {animal.image &&
+                                            <figure>
+                                                <img src={animal.image} alt="" className="card-image" />
+                                            </figure>
+                                        }
                                     </div>
                                 )
                             }
@@ -149,15 +147,17 @@
 
                     <button onClick={() => setShow(true)}>Aggiungi Animale</button>
 
-                    <section>
-                        <Modal
-                            title='Inserisci un nuovo animale'
-                            content={<input type='text' value={contentValue} onChange={e => setContentValue(e.target.value)} />}
-                            show={show}
-                            onClose={() => setShow(false)}
-                            onConfirm={() => addNewAnimal(contentValue)}
-                        />
-                    </section>
+
+                    <Modal
+                        title='Inserisci un nuovo animale'
+                        content={<>
+                            <input type='text' value={contentValue} onChange={e => setContentValue(e.target.value)} />
+                            {isLoading && <p>Caricando il risultato...</p>}
+                        </>}
+                        show={show}
+                        onClose={() => setShow(false)}
+                        onConfirm={() => addNewAnimal(contentValue)}
+                    />
                 </div >
             )
         }
